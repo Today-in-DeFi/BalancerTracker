@@ -1,0 +1,20 @@
+# Credentials
+*.json
+!pools.json
+!pools_example.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+venv/
+.venv/
+
+# Data (keep structure, ignore contents)
+data/*.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
