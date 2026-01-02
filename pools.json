@@ -3,5 +3,19 @@
     "aura_enabled": true
   },
   "pools": [
+    {
+      "chain": "ethereum",
+      "pool": "0xc4ce391d82d164c166df9c8336ddf84206b2f812",
+      "asset_type": "ETH",
+      "comment": "wstETH/WETH Aave Lido",
+      "aura_enabled": true
+    },
+    {
+      "chain": "base",
+      "pool": "0x7ab124ec4029316c2a42f713828ddf2a192b36db",
+      "asset_type": "USD",
+      "comment": "GHO/USDC",
+      "aura_enabled": true
+    }
   ]
 }

@@ -1,0 +1,360 @@
+2025-12-14 07:30:01 - Starting Balancer Tracker cron job
+2025-12-14 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 12 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $596.55K | 0.66%      | 1.42-4.97%    | waEthLidoWETH APR: 0.47%, waEthLidowstETH APR: 1.42% | 3.98%     | 8.86%      | $359.61K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-13 23:30:18
+2025-12-14 07:30:19 - Balancer Tracker completed successfully
+2025-12-14 07:30:19 - Cron job completed
+2025-12-15 07:30:01 - Starting Balancer Tracker cron job
+2025-12-15 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 13 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $588.93K | 1.40%      | 1.45-5.07%    | waEthLidoWETH APR: 0.57%, waEthLidowstETH APR: 1.26% | 4.68%     | 9.61%      | $355.01K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-14 23:30:17
+2025-12-15 07:30:19 - Balancer Tracker completed successfully
+2025-12-15 07:30:19 - Cron job completed
+2025-12-16 07:30:01 - Starting Balancer Tracker cron job
+2025-12-16 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 19 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $566.51K | 3.98%      | 1.42-5.00%    | waEthLidoWETH APR: 0.41%, waEthLidowstETH APR: 1.55% | 7.37%     | 12.27%     | $341.50K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-16 07:30:34
+2025-12-16 07:30:34 - Balancer Tracker completed successfully
+2025-12-16 07:30:34 - Cron job completed
+2025-12-17 07:30:01 - Starting Balancer Tracker cron job
+2025-12-17 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 20 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $365.90K | 2.32%      | 1.44-5.05%    | waEthLidoWETH APR: 0.43%, waEthLidowstETH APR: 1.47% | 5.67%     | 11.31%     | $340.71K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-17 07:30:20
+2025-12-17 07:30:21 - Balancer Tracker completed successfully
+2025-12-17 07:30:21 - Cron job completed
+2025-12-18 07:30:01 - Starting Balancer Tracker cron job
+2025-12-18 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 21 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $269.06K | 1.92%      | 1.91-6.70%    | waEthLidoWETH APR: 0.45%, waEthLidowstETH APR: 1.45% | 5.74%     | 13.21%     | $244.95K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-18 07:30:19
+2025-12-18 07:30:19 - Balancer Tracker completed successfully
+2025-12-18 07:30:19 - Cron job completed
+2025-12-19 07:30:01 - Starting Balancer Tracker cron job
+2025-12-19 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 22 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $238.69K | 1.65%      | 1.81-6.35%    | waEthLidoWETH APR: 2.76%, waEthLidowstETH APR: 1.48% | 7.70%     | 15.25%     | $214.52K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-19 07:30:18
+2025-12-19 07:30:19 - Balancer Tracker completed successfully
+2025-12-19 07:30:19 - Cron job completed
+2025-12-20 07:30:01 - Starting Balancer Tracker cron job
+2025-12-20 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 23 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $251.73K | 1.24%      | 1.75-6.15%    | waEthLidoWETH APR: 1.08%, waEthLidowstETH APR: 1.27% | 5.35%     | 12.72%     | $226.13K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-20 07:30:17
+2025-12-20 07:30:18 - Balancer Tracker completed successfully
+2025-12-20 07:30:18 - Cron job completed
+2025-12-21 07:30:01 - Starting Balancer Tracker cron job
+2025-12-21 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 24 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $251.12K | 0.83%      | 1.76-6.14%    | waEthLidoWETH APR: 0.60%, waEthLidowstETH APR: 1.28% | 4.46%     | 11.85%     | $225.69K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-21 07:30:20
+2025-12-21 07:30:21 - Balancer Tracker completed successfully
+2025-12-21 07:30:21 - Cron job completed
+2025-12-22 07:30:01 - Starting Balancer Tracker cron job
+2025-12-22 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 25 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $253.48K | 1.36%      | 1.73-6.06%    | waEthLidoWETH APR: 0.73%, waEthLidowstETH APR: 1.19% | 5.01%     | 12.35%     | $227.81K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-22 07:30:17
+2025-12-22 07:30:18 - Balancer Tracker completed successfully
+2025-12-22 07:30:18 - Cron job completed
+2025-12-23 07:30:01 - Starting Balancer Tracker cron job
+2025-12-23 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 26 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $253.76K | 3.16%      | 1.71-5.99%    | waEthLidoWETH APR: 0.47%, waEthLidowstETH APR: 1.57% | 6.91%     | 14.25%     | $228.07K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-23 07:30:33
+2025-12-23 07:30:34 - Balancer Tracker completed successfully
+2025-12-23 07:30:34 - Cron job completed
+2025-12-24 07:30:01 - Starting Balancer Tracker cron job
+2025-12-24 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 27 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $249.45K | 2.66%      | 1.73-6.05%    | waEthLidoWETH APR: 0.42%, waEthLidowstETH APR: 1.67% | 6.48%     | 13.87%     | $224.19K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-24 07:30:17
+2025-12-24 07:30:18 - Balancer Tracker completed successfully
+2025-12-24 07:30:18 - Cron job completed
+2025-12-25 07:30:01 - Starting Balancer Tracker cron job
+2025-12-25 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 28 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $249.34K | 1.18%      | 1.75-6.13%    | waEthLidoWETH APR: 0.42%, waEthLidowstETH APR: 1.67% | 5.03%     | 12.35%     | $224.10K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-25 07:30:18
+2025-12-25 07:30:19 - Balancer Tracker completed successfully
+2025-12-25 07:30:19 - Cron job completed
+2025-12-26 07:30:01 - Starting Balancer Tracker cron job
+2025-12-26 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 29 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $246.88K | 0.18%      | 1.65-5.81%    | waEthLidoWETH APR: 0.47%, waEthLidowstETH APR: 1.59% | 3.89%     | 11.02%     | $221.88K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-26 07:30:15
+2025-12-26 07:30:16 - Balancer Tracker completed successfully
+2025-12-26 07:30:16 - Cron job completed
+2025-12-27 07:30:01 - Starting Balancer Tracker cron job
+2025-12-27 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 30 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $247.16K | 0.36%      | 1.61-5.66%    | waEthLidoWETH APR: 0.57%, waEthLidowstETH APR: 1.41% | 3.95%     | 11.05%     | $222.13K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-27 07:30:16
+2025-12-27 07:30:17 - Balancer Tracker completed successfully
+2025-12-27 07:30:17 - Cron job completed
+2025-12-28 07:30:01 - Starting Balancer Tracker cron job
+2025-12-28 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 31 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $247.81K | 1.04%      | 1.60-5.61%    | waEthLidoWETH APR: 0.57%, waEthLidowstETH APR: 1.36% | 4.57%     | 11.65%     | $222.72K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-28 07:30:16
+2025-12-28 07:30:17 - Balancer Tracker completed successfully
+2025-12-28 07:30:17 - Cron job completed
+2025-12-29 07:30:01 - Starting Balancer Tracker cron job
+2025-12-29 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 32 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $248.31K | 1.48%      | 1.64-5.73%    | waEthLidoWETH APR: 0.71%, waEthLidowstETH APR: 1.22% | 5.03%     | 12.11%     | $223.17K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-29 07:30:17
+2025-12-29 07:30:18 - Balancer Tracker completed successfully
+2025-12-29 07:30:18 - Cron job completed
+2025-12-30 07:30:01 - Starting Balancer Tracker cron job
+2025-12-30 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 33 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $207.83K | 2.05%      | 1.91-6.68%    | waEthLidoWETH APR: 0.58%, waEthLidowstETH APR: 1.26% | 5.80%     | 14.09%     | $182.72K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-30 07:30:19
+2025-12-30 07:30:20 - Balancer Tracker completed successfully
+2025-12-30 07:30:20 - Cron job completed
+2025-12-31 07:30:01 - Starting Balancer Tracker cron job
+2025-12-31 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 34 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $161.05K | 1.10%      | 2.45-8.60%    | waEthLidoWETH APR: 0.55%, waEthLidowstETH APR: 1.30% | 5.40%     | 16.18%     | $135.66K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2025-12-31 07:30:16
+2025-12-31 07:30:17 - Balancer Tracker completed successfully
+2025-12-31 07:30:17 - Cron job completed
+2026-01-01 07:30:01 - Starting Balancer Tracker cron job
+2026-01-01 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 35 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $161.15K | 0.85%      | 2.46-8.62%    | waEthLidoWETH APR: 0.59%, waEthLidowstETH APR: 1.32% | 5.22%     | 16.05%     | $135.74K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2026-01-01 07:30:17
+2026-01-01 07:30:19 - Balancer Tracker completed successfully
+2026-01-01 07:30:19 - Cron job completed
+2026-01-02 07:30:01 - Starting Balancer Tracker cron job
+2026-01-02 07:30:01 - Executing Balancer Tracker...
+Aura Finance integration enabled
+Fetching 1 pools from ethereum...
+Saved 1 pools to data/balancer_pools_latest.json
+History updated: 1 pools, 36 total snapshots
+
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+| Pool Name                      | Chain    | Coins                         | TVL      | Base APY   | BAL Rewards   | Other Rewards                                        | Min APY   | Aura APY   | Aura TVL   |
++================================+==========+===============================+==========+============+===============+======================================================+===========+============+============+
+| Balancer Aave Lido wETH-wstETH | Ethereum | waEthLidoWETH/waEthLidowstETH | $156.68K | 0.89%      | 1.32-4.62%    | waEthLidoWETH APR: 0.63%, waEthLidowstETH APR: 1.22% | 4.07%     | 12.11%     | $131.03K   |
++--------------------------------+----------+-------------------------------+----------+------------+---------------+------------------------------------------------------+-----------+------------+------------+
+
+Total pools: 1
+Exported 1 pools to 'Ethereum ETH'
+Logged 1 pool snapshots at 2026-01-02 07:30:18
+2026-01-02 07:30:19 - Balancer Tracker completed successfully
+2026-01-02 07:30:19 - Cron job completed
