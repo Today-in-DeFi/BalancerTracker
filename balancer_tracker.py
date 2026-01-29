@@ -6,6 +6,7 @@ Fetches TVL, APY, and rewards data for Balancer pools with Aura Finance integrat
 
 import requests
 import json
+import time
 from typing import Dict, List, Optional, Union
 from tabulate import tabulate
 import argparse
@@ -274,6 +275,7 @@ class AuraFinanceAPI:
         })
         self._pools_cache = {}  # Cache: chain -> {lp_address -> pool_data}
         self._price_cache = {}  # Cache: token -> price
+        self._prices_fetched = False  # Track if we've done batch fetch
 
     def _make_request(self, url: str, query: str, variables: Dict = None) -> Dict:
         """Make GraphQL request to Aura subgraph"""
@@ -295,31 +297,76 @@ class AuraFinanceAPI:
             print(f"Aura API request failed: {e}")
             return {}
 
+    def fetch_all_prices(self, max_retries: int = 3) -> Dict[str, float]:
+        """
+        Batch fetch all known token prices from CoinGecko in a single request.
+        Uses retry logic with exponential backoff to handle rate limits.
+
+        Returns:
+            Dict mapping symbol -> price in USD
+        """
+        if self._prices_fetched:
+            return self._price_cache
+
+        # Get unique CoinGecko IDs
+        unique_ids = set(self.COINGECKO_IDS.values())
+        ids_str = ','.join(unique_ids)
+
+        url = f"https://api.coingecko.com/api/v3/simple/price?ids={ids_str}&vs_currencies=usd"
+
+        # Reverse mapping: coingecko_id -> [symbols]
+        id_to_symbols = {}
+        for symbol, cg_id in self.COINGECKO_IDS.items():
+            if cg_id not in id_to_symbols:
+                id_to_symbols[cg_id] = []
+            id_to_symbols[cg_id].append(symbol)
+
+        for attempt in range(max_retries):
+            try:
+                response = self.session.get(url, timeout=15)
+                response.raise_for_status()
+                data = response.json()
+
+                # Map prices back to symbols
+                for cg_id, price_data in data.items():
+                    price = price_data.get('usd')
+                    if price and cg_id in id_to_symbols:
+                        for symbol in id_to_symbols[cg_id]:
+                            self._price_cache[symbol] = price
+
+                self._prices_fetched = True
+                return self._price_cache
+
+            except requests.exceptions.HTTPError as e:
+                if e.response.status_code == 429:
+                    # Rate limited - wait with exponential backoff
+                    import time
+                    wait_time = (2 ** attempt) * 2  # 2, 4, 8 seconds
+                    if attempt < max_retries - 1:
+                        time.sleep(wait_time)
+                        continue
+                print(f"CoinGecko batch price fetch failed: {e}")
+                break
+            except Exception as e:
+                print(f"CoinGecko batch price fetch failed: {e}")
+                break
+
+        self._prices_fetched = True  # Don't retry on subsequent calls
+        return self._price_cache
+
     def get_token_price(self, symbol: str) -> Optional[float]:
-        """Get token price from CoinGecko"""
+        """Get token price from cache (batch fetched from CoinGecko)"""
+        # Ensure prices are fetched
+        if not self._prices_fetched:
+            self.fetch_all_prices()
+
+        # Check cache with both original and uppercase
         if symbol in self._price_cache:
             return self._price_cache[symbol]
+        if symbol.upper() in self._price_cache:
+            return self._price_cache[symbol.upper()]
 
-        coingecko_id = self.COINGECKO_IDS.get(symbol)
-        if not coingecko_id:
-            # Try uppercase if not found
-            coingecko_id = self.COINGECKO_IDS.get(symbol.upper())
-
-        if not coingecko_id:
-            return None
-
-        try:
-            url = f"https://api.coingecko.com/api/v3/simple/price?ids={coingecko_id}&vs_currencies=usd"
-            response = self.session.get(url, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-            price = data.get(coingecko_id, {}).get('usd')
-            if price:
-                self._price_cache[symbol] = price
-            return price
-        except Exception as e:
-            print(f"CoinGecko price fetch failed for {symbol}: {e}")
-            return None
+        return None
 
     def get_pools(self, chain: str = 'ethereum') -> Dict[str, Dict]:
         """
