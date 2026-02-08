@@ -287,7 +287,7 @@ class PoolDataStore:
 
     def _pool_to_json(self, pool: PoolData) -> Dict[str, Any]:
         """Convert PoolData to JSON-serializable dict with structure"""
-        return {
+        result = {
             "id": self._generate_pool_key(pool),
             "name": pool.name,
             "chain": pool.chain,
@@ -310,6 +310,8 @@ class PoolDataStore:
                 "amounts": [round(a, 6) for a in pool.coin_amounts],
                 "prices": [round(p, 4) for p in pool.coin_prices]
             },
+            # Flat aura_apy field for FarmTracker compatibility
+            "aura_apy": round(pool.aura_apy, 4) if pool.aura_apy is not None else None,
             "aura": {
                 "apy": round(pool.aura_apy, 4) if pool.aura_apy is not None else None,
                 "tvl": round(pool.aura_tvl, 2) if pool.aura_tvl is not None else None,
@@ -317,6 +319,7 @@ class PoolDataStore:
                 "staking_contract": pool.aura_staking_contract
             } if pool.aura_apy is not None else None
         }
+        return result
 
     def _json_to_pool(self, data: Dict[str, Any]) -> Optional[PoolData]:
         """Convert JSON dict back to PoolData"""
