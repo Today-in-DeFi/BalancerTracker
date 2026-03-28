@@ -324,6 +324,8 @@ BalancerTracker/
 ├── data_store.py            # JSON storage layer
 ├── pools.json               # Pool configuration
 ├── Google Credentials.json  # For Sheets export
+├── scripts/
+│   └── check_tracked.py     # Check if a pool is tracked (JSON output)
 └── data/
     ├── balancer_pools_latest.json   # Current snapshot
     └── balancer_pools_history.json  # Time-series

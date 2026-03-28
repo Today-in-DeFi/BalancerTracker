@@ -32,6 +32,9 @@ python balancer_tracker.py --no-json
 
 # Export to Google Sheets
 python balancer_tracker.py --credentials "Google Credentials.json"
+
+# Check if a pool is already tracked
+python3 scripts/check_tracked.py --pool 0xc4ce...b812 --chain ethereum
 ```
 
 ## Configuration
