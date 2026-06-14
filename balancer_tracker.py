@@ -40,6 +40,7 @@ class BalancerAPI:
         'fraxtal': 'FRAXTAL',
         'mode': 'MODE',
         'sonic': 'SONIC',
+        'monad': 'MONAD',
     }
 
     def __init__(self):
@@ -102,6 +103,7 @@ class BalancerAPI:
                     symbol
                     decimals
                     balance
+                    balanceUSD
                     weight
                     priceRate
                 }
@@ -153,6 +155,7 @@ class BalancerAPI:
                     symbol
                     decimals
                     balance
+                    balanceUSD
                     weight
                     priceRate
                 }
@@ -853,25 +856,46 @@ class BalancerTracker:
         coin_amounts = []
         coin_prices = []
 
+        # First pass: collect balances, USD values and per-token prices.
+        # The Balancer v3 API returns balanceUSD per token, which gives both a
+        # real USD price (balanceUSD / balance) and the live, value-weighted
+        # composition (balanceUSD / sum(balanceUSD)). priceRate is kept as a
+        # last-resort fallback so prices are never left at 0.0.
+        token_rows = []
+        total_value_usd = 0.0
+
         for token in pool_data.get('poolTokens', []):
             symbol = token.get('symbol', 'Unknown')
             balance = float(token.get('balance', 0) or 0)
-            weight = token.get('weight')
+            balance_usd = float(token.get('balanceUSD', 0) or 0)
+            price_rate = float(token.get('priceRate', 0) or 0)
+
+            if balance > 0 and balance_usd > 0:
+                price = balance_usd / balance
+            elif price_rate > 0:
+                # Fallback: assume a $1 USD anchor scaled by priceRate (stables)
+                price = price_rate
+                balance_usd = balance * price
+                print(f"Warning: no balanceUSD for {symbol} in pool "
+                      f"{pool_data.get('name', '')}, using priceRate {price_rate}")
+            else:
+                # Last resort for a clearly-stable token; flag it loudly
+                price = 1.0
+                balance_usd = balance * price
+                print(f"Warning: no price for {symbol} in pool "
+                      f"{pool_data.get('name', '')}, defaulting to 1.0")
+
+            token_rows.append((symbol, balance, price, balance_usd))
+            total_value_usd += balance_usd
+
+        # Second pass: emit coins, value-weighted ratios, amounts and prices.
+        for symbol, balance, price, balance_usd in token_rows:
+            ratio_pct = (balance_usd / total_value_usd * 100) if total_value_usd > 0 else 0.0
 
             coins.append(symbol)
             coin_amounts.append(balance)
-
-            # Calculate ratio
-            if weight:
-                ratio_pct = float(weight) * 100
-            else:
-                # For non-weighted pools, estimate equal distribution
-                ratio_pct = 100 / len(pool_data.get('poolTokens', [1]))
-
             coin_ratios.append(f"{symbol}: {ratio_pct:.1f}%")
-
-            # Price placeholder (would need token price API for accurate prices)
-            coin_prices.append(0.0)
+            coin_prices.append(price)
 
         # Aura data
         aura_apy = None
