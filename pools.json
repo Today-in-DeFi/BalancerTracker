@@ -16,6 +16,34 @@
       "asset_type": "USD",
       "comment": "GHO/USDC",
       "aura_enabled": true
+    },
+    {
+      "chain": "ethereum",
+      "pool": "0x111ce2a60c30f6058a57d0dbae1a39a42d998826",
+      "asset_type": "USD",
+      "comment": "msUSD/USDC",
+      "aura_enabled": true
+    },
+    {
+      "chain": "monad",
+      "pool": "0xc71c30914bc7790218b1adee782ba307b7867b08",
+      "asset_type": "USD",
+      "comment": "syzUSD/AUSD",
+      "aura_enabled": false
+    },
+    {
+      "chain": "monad",
+      "pool": "0x2daa146dfb7eaef0038f9f15b2ec1e4de003f72b",
+      "asset_type": "USD",
+      "comment": "USDT0/AUSD/USDC",
+      "aura_enabled": false
+    },
+    {
+      "chain": "monad",
+      "pool": "0x963b93c2a8c8f4db243de6ec360f528a8e1540d5",
+      "asset_type": "USD",
+      "comment": "sUSDe/USDT0 Aave",
+      "aura_enabled": false
     }
   ]
 }
