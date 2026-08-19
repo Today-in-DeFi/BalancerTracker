@@ -6,6 +6,7 @@ Fetches TVL, APY, and rewards data for Balancer pools with Aura Finance integrat
 
 import requests
 import json
+import re
 import time
 from typing import Dict, List, Optional, Union
 from tabulate import tabulate
@@ -19,6 +20,73 @@ from data_store import PoolDataStore, PoolData
 
 # Load environment variables
 load_dotenv()
+
+
+# Wrapper families, matched on the token symbol prefix.
+#
+# Pools that hold the same underlying assets through different wrappers are
+# near-indistinguishable by name or ticker set, and can carry very different yields.
+# Monad has two USDT0/AUSD/USDC tri-stables live at once:
+#
+#   0x2DAA146d...  wnUSDT0 / wnAUSD / wnUSDC        Neverland   ~6.9% total APR
+#   0xDAaE8049...  waMonUSDT0 / waMonAUSD / waMonUSDC   Aave     ~10.6% total APR
+#
+# The prefix is the only distinguishing signal, so it gets resolved once here and
+# stored on the pool record instead of being re-derived from display names downstream.
+# `wrapper` in pools.json overrides detection for anything this table doesn't know.
+WRAPPER_PATTERNS = [
+    # Aave static aTokens: waEthLidoWETH, waBasGHO, waMonUSDT0, waArbUSDCn, ...
+    ('aave', re.compile(r'^wa(Mon|Eth|Bas|Arb|Avax|Gno|Op|Pol|Son|Fra|Zk|Mode)')),
+    # Neverland wrapped tokens: wnUSDC, wnAUSD, wnWETH, wnSHMON, ...
+    ('neverland', re.compile(r'^wn[A-Z0-9]')),
+]
+
+
+def detect_wrapper_families(symbols: List[str]) -> List[str]:
+    """
+    Detect which wrapper families a pool's tokens belong to.
+
+    Args:
+        symbols: Token symbols as returned by the Balancer API
+
+    Returns:
+        Sorted list of family names; empty if no token matches a known wrapper
+    """
+    families = set()
+    for symbol in symbols:
+        for family, pattern in WRAPPER_PATTERNS:
+            if pattern.match(symbol or ''):
+                families.add(family)
+                break
+    return sorted(families)
+
+
+def resolve_wrapper(symbols: List[str], configured: str = None) -> tuple[Optional[str], List[str]]:
+    """
+    Resolve a pool's wrapper family, preferring the value configured in pools.json.
+
+    Args:
+        symbols: Token symbols from the Balancer API
+        configured: Explicit `wrapper` from the pool's config entry, if any
+
+    Returns:
+        Tuple of (wrapper, detected_families). `wrapper` is a single family name,
+        "mixed" when tokens span families, or None when nothing wrapped was found.
+    """
+    detected = detect_wrapper_families(symbols)
+
+    if configured:
+        configured = configured.lower()
+        if detected and configured not in detected:
+            print(f"Warning: configured wrapper '{configured}' does not match tokens "
+                  f"{symbols} (detected: {', '.join(detected) or 'none'})")
+        return configured, detected
+
+    if not detected:
+        return None, []
+    if len(detected) == 1:
+        return detected[0], detected
+    return 'mixed', detected
 
 
 class BalancerAPI:
@@ -244,6 +312,88 @@ class BalancerAPI:
 
         result = self._make_request(query, variables)
         return result.get('poolGetPools', [])
+
+
+class MerklAPI:
+    """
+    Merkl opportunities API client - used to cross-check Merkl reward APRs.
+
+    Balancer surfaces Merkl campaigns as a "Merkl Rewards" aprItem, but computes the
+    rate itself; Merkl publishes its own number for the same campaign and the two
+    routinely disagree by several percentage points. On reward-dominated pools that is
+    the difference between a 10.5% and an 8.0% headline, so both are recorded.
+    """
+
+    BASE_URL = "https://api.merkl.xyz/v4/opportunities"
+
+    # Merkl indexes by numeric chain ID
+    CHAIN_IDS = {
+        'ethereum': 1,
+        'mainnet': 1,
+        'optimism': 10,
+        'gnosis': 100,
+        'polygon': 137,
+        'zkevm': 1101,
+        'base': 8453,
+        'monad': 143,
+        'sonic': 146,
+        'fraxtal': 252,
+        'mode': 34443,
+        'arbitrum': 42161,
+        'avalanche': 43114,
+    }
+
+    def __init__(self):
+        self.session = requests.Session()
+        self.session.headers.update({'User-Agent': 'BalancerTracker/1.0'})
+        self._cache = {}  # (chain_id, address) -> Optional[float]
+
+    def get_pool_apr(self, address: str, chain: str = 'ethereum') -> Optional[float]:
+        """
+        Get Merkl's own reward APR for a pool.
+
+        Args:
+            address: Balancer pool contract address (Merkl's opportunity identifier)
+            chain: Chain name
+
+        Returns:
+            Reward APR in percent, or None if Merkl has no live campaign for the pool
+            (or the chain/request is unavailable)
+        """
+        chain_id = self.CHAIN_IDS.get(chain.lower())
+        if not chain_id or not address:
+            return None
+
+        cache_key = (chain_id, address.lower())
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        try:
+            response = self.session.get(
+                self.BASE_URL,
+                params={'chainId': chain_id, 'identifier': address},
+                timeout=20
+            )
+            response.raise_for_status()
+            opportunities = response.json()
+        except (requests.RequestException, ValueError) as e:
+            print(f"Warning: Merkl lookup failed for {address} on {chain}: {e}")
+            return None
+
+        if not isinstance(opportunities, list):
+            self._cache[cache_key] = None
+            return None
+
+        # Merkl returns one opportunity per (identifier, action); sum the live ones.
+        live = [
+            o for o in opportunities
+            if o.get('status') == 'LIVE'
+            and (o.get('identifier') or '').lower() == address.lower()
+        ]
+
+        apr = sum(float(o.get('apr', 0) or 0) for o in live) if live else None
+        self._cache[cache_key] = apr
+        return apr
 
 
 class AuraFinanceAPI:
@@ -801,16 +951,34 @@ class GoogleSheetsExporter:
 class BalancerTracker:
     """Main tracker class - fetches data and saves to data store"""
 
-    def __init__(self, data_store: PoolDataStore = None, enable_aura: bool = False):
+    def __init__(self, data_store: PoolDataStore = None, enable_aura: bool = False,
+                 enable_merkl: bool = True):
         self.api = BalancerAPI()
         self.data_store = data_store or PoolDataStore()
         self.enable_aura = enable_aura
         self.aura_api = AuraFinanceAPI() if enable_aura else None
+        self.enable_merkl = enable_merkl
+        self.merkl_api = MerklAPI() if enable_merkl else None
 
-    def _parse_pool(self, pool_data: Dict, chain: str, aura_enabled: bool = False) -> Optional[PoolData]:
-        """Parse API response into PoolData object"""
+    def _parse_pool(self, pool_data: Dict, chain: str, aura_enabled: bool = False,
+                    cfg: Dict = None, check_merkl: bool = True) -> Optional[PoolData]:
+        """
+        Parse API response into PoolData object.
+
+        Args:
+            pool_data: Raw pool dict from the Balancer API
+            chain: Chain name
+            aura_enabled: Whether to look this pool up on Aura
+            cfg: The pool's entry in pools.json (supplies the `wrapper` override)
+            check_merkl: Whether to cross-check reward APR against Merkl's own API
+
+        Returns:
+            PoolData, or None if pool_data is empty
+        """
         if not pool_data:
             return None
+
+        cfg = cfg or {}
 
         dynamic = pool_data.get('dynamicData', {})
 
@@ -823,6 +991,7 @@ class BalancerTracker:
         bal_base = 0.0  # VEBAL_EMISSIONS - base BAL rewards
         bal_boost = 0.0  # STAKING_BOOST - additional boost with veBAL
         other_rewards = []
+        merkl_apr_balancer = None  # Balancer's own figure for the Merkl campaign
 
         for item in apr_items:
             apr_type = item.get('type', '')
@@ -839,6 +1008,8 @@ class BalancerTracker:
                 # Additional BAL rewards with veBAL boost
                 bal_boost = apr_value
             elif apr_value > 0:
+                if apr_type == 'MERKL':
+                    merkl_apr_balancer = (merkl_apr_balancer or 0.0) + apr_value
                 other_rewards.append({
                     'token': title,
                     'apy': apr_value
@@ -897,6 +1068,26 @@ class BalancerTracker:
             coin_ratios.append(f"{symbol}: {ratio_pct:.1f}%")
             coin_prices.append(price)
 
+        # Wrapper family - explicit config wins, symbol prefixes are the fallback
+        wrapper, wrappers = resolve_wrapper(coins, cfg.get('wrapper'))
+
+        # Merkl cross-check. Queried even when Balancer reports no Merkl campaign, so a
+        # campaign Balancer has not picked up yet still shows up in the record.
+        merkl_apr_merkl = None
+        if self.merkl_api and check_merkl:
+            merkl_apr_merkl = self.merkl_api.get_pool_apr(pool_data.get('address', ''), chain)
+
+        if merkl_apr_balancer is not None and merkl_apr_merkl is not None:
+            delta = merkl_apr_balancer - merkl_apr_merkl
+            if abs(delta) >= 1.0:
+                print(f"Note: Merkl APR disagreement on {pool_data.get('name', '')}: "
+                      f"Balancer {merkl_apr_balancer:.2f}% vs Merkl {merkl_apr_merkl:.2f}% "
+                      f"({delta:+.2f}pp); publishing Balancer's")
+        elif merkl_apr_balancer is None and merkl_apr_merkl is not None:
+            print(f"Note: Merkl reports a {merkl_apr_merkl:.2f}% campaign on "
+                  f"{pool_data.get('name', '')} that Balancer's aprItems do not include; "
+                  f"total_apy excludes it")
+
         # Aura data
         aura_apy = None
         aura_tvl = None
@@ -942,16 +1133,21 @@ class BalancerTracker:
             coin_ratios=coin_ratios,
             coin_amounts=coin_amounts,
             coin_prices=coin_prices,
+            wrapper=wrapper,
+            wrappers=wrappers,
+            merkl_apr_balancer=merkl_apr_balancer,
+            merkl_apr_merkl=merkl_apr_merkl,
             aura_apy=aura_apy,
             aura_tvl=aura_tvl,
             aura_boost=aura_boost,
             aura_staking_contract=aura_staking_contract
         )
 
-    def get_pool(self, chain: str, identifier: str, aura_enabled: bool = False) -> Optional[PoolData]:
+    def get_pool(self, chain: str, identifier: str, aura_enabled: bool = False,
+                 cfg: Dict = None) -> Optional[PoolData]:
         """Get single pool data"""
         pool_data = self.api.find_pool(identifier, chain)
-        return self._parse_pool(pool_data, chain, aura_enabled)
+        return self._parse_pool(pool_data, chain, aura_enabled, cfg=cfg)
 
     def track_pools(self, pools_config: List[Dict]) -> List[PoolData]:
         """
@@ -984,6 +1180,7 @@ class BalancerTracker:
             short_addrs = [a for a in addresses if len(a.replace('0x', '')) <= 42]
 
             # Batch fetch by address
+            found = set()
             if short_addrs:
                 pools = self.api.get_pools_by_address(short_addrs, chain)
                 for pool_data in pools:
@@ -992,8 +1189,9 @@ class BalancerTracker:
                     cfg = next((c for c in pool_configs if c['pool'].lower() == addr), {})
                     aura_enabled = cfg.get('aura_enabled', False)
 
-                    parsed = self._parse_pool(pool_data, chain, aura_enabled)
+                    parsed = self._parse_pool(pool_data, chain, aura_enabled, cfg=cfg)
                     if parsed:
+                        found.add(addr)
                         results.append(parsed)
 
             # Fetch full IDs individually
@@ -1002,9 +1200,16 @@ class BalancerTracker:
                 aura_enabled = cfg.get('aura_enabled', False)
 
                 pool_data = self.api.get_pool_by_id(pool_id, chain)
-                parsed = self._parse_pool(pool_data, chain, aura_enabled)
+                parsed = self._parse_pool(pool_data, chain, aura_enabled, cfg=cfg)
                 if parsed:
+                    found.add(pool_id.lower())
                     results.append(parsed)
+
+            # A configured pool that returns nothing is a silent coverage gap otherwise
+            for cfg in pool_configs:
+                if cfg['pool'].lower() not in found:
+                    print(f"Warning: no Balancer data for {cfg['pool']} on {chain} "
+                          f"({cfg.get('comment', 'no description')}) - not tracked this run")
 
         return results
 
@@ -1039,10 +1244,12 @@ def print_results(pool_data_list: List[PoolData]):
 
     # Check if any pools have Aura data
     has_aura = any(p.aura_apy is not None for p in pool_data_list)
+    has_wrapper = any(p.wrapper for p in pool_data_list)
 
     headers = [
         "Pool Name",
         "Chain",
+        "Wrapper",
         "Coins",
         "TVL",
         "Base APY",
@@ -1050,6 +1257,9 @@ def print_results(pool_data_list: List[PoolData]):
         "Other Rewards",
         "Min APY"
     ]
+
+    if not has_wrapper:
+        headers.remove("Wrapper")
 
     if has_aura:
         headers.extend(["Aura APY", "Aura TVL"])
@@ -1083,6 +1293,12 @@ def print_results(pool_data_list: List[PoolData]):
             pool.name[:35] + "..." if len(pool.name) > 35 else pool.name,
             pool.chain.title(),
             coins_str,
+        ]
+
+        if has_wrapper:
+            row.insert(2, pool.wrapper or "-")
+
+        row += [
             format_currency(pool.tvl),
             f"{pool.base_apy:.2f}%",
             bal_str,
@@ -1099,6 +1315,19 @@ def print_results(pool_data_list: List[PoolData]):
 
     print("\n" + tabulate(rows, headers=headers, tablefmt="grid"))
     print(f"\nTotal pools: {len(pool_data_list)}")
+
+    # Surface Balancer/Merkl disagreements - published totals use Balancer's figure
+    diverging = [
+        p for p in pool_data_list
+        if p.merkl_apr_balancer is not None and p.merkl_apr_merkl is not None
+        and abs(p.merkl_apr_balancer - p.merkl_apr_merkl) >= 1.0
+    ]
+    if diverging:
+        print("\nMerkl APR cross-check (total_apy uses Balancer's figure):")
+        for p in diverging:
+            delta = p.merkl_apr_balancer - p.merkl_apr_merkl
+            print(f"  {p.name}: Balancer {p.merkl_apr_balancer:.2f}% vs "
+                  f"Merkl {p.merkl_apr_merkl:.2f}% ({delta:+.2f}pp)")
 
 
 def load_pools_config(filepath: str = None) -> tuple[List[Dict], bool]:
@@ -1189,7 +1418,7 @@ def main():
         print(f"Fetching top {args.top} pools on {args.chain}...")
         top_pools = tracker.api.get_top_pools(args.chain, limit=args.top)
         for pool_data in top_pools:
-            parsed = tracker._parse_pool(pool_data, args.chain)
+            parsed = tracker._parse_pool(pool_data, args.chain, check_merkl=False)
             if parsed:
                 results.append(parsed)
     elif pools_config:

@@ -26,6 +26,17 @@ class PoolData:
     coin_ratios: List[str]
     coin_amounts: List[float] = field(default_factory=list)
     coin_prices: List[float] = field(default_factory=list)
+    # Wrapper family: which protocol's wrapped tokens this pool holds.
+    # "aave" (waMon*/waEth*/waBas*) vs "neverland" (wn*) etc. Two pools can hold the
+    # same underlying assets with different wrappers and carry ~2x different yields,
+    # so consumers must join on this + address, never on display name or tickers.
+    wrapper: Optional[str] = None           # single family, "mixed", or None if unwrapped
+    wrappers: List[str] = field(default_factory=list)  # every family detected, sorted
+    # Merkl cross-check: Balancer and Merkl publish different numbers for the same
+    # campaign. total_apy is built from Balancer's aprItems; Merkl's own figure is
+    # carried alongside so consumers can see the gap instead of picking blind.
+    merkl_apr_balancer: Optional[float] = None
+    merkl_apr_merkl: Optional[float] = None
     # Aura Finance fields
     aura_apy: Optional[float] = None
     aura_tvl: Optional[float] = None
@@ -78,6 +89,7 @@ class PoolDataStore:
             return ""
 
         timestamp = datetime.utcnow()
+        keys = self._generate_pool_keys(pool_data_list)
 
         data = {
             "version": "1.0",
@@ -88,7 +100,8 @@ class PoolDataStore:
                 "chains": sorted(set(p.chain for p in pool_data_list)),
                 "has_aura": any(p.aura_apy is not None for p in pool_data_list)
             },
-            "pools": [self._pool_to_json(p) for p in pool_data_list]
+            "pools": [self._pool_to_json(p, keys[self._generate_pool_uid(p)])
+                      for p in pool_data_list]
         }
 
         with open(self.latest_file, "w") as f:
@@ -155,20 +168,29 @@ class PoolDataStore:
         # Update timestamp
         history["last_updated"] = timestamp_str
 
+        keys = self._generate_pool_keys(pool_data_list)
+
         # Append snapshot for each pool
         for pool in pool_data_list:
-            pool_key = self._generate_pool_key(pool)
+            pool_key = keys[self._generate_pool_uid(pool)]
 
             if pool_key not in history["pools"]:
                 history["pools"][pool_key] = {
                     "metadata": {
+                        "uid": self._generate_pool_uid(pool),
                         "name": pool.name,
                         "chain": pool.chain,
                         "address": pool.address,
-                        "pool_id": pool.pool_id
+                        "pool_id": pool.pool_id,
+                        "wrapper": pool.wrapper
                     },
                     "snapshots": []
                 }
+            else:
+                # Backfill fields added after this pool was first recorded
+                meta = history["pools"][pool_key].setdefault("metadata", {})
+                meta.setdefault("uid", self._generate_pool_uid(pool))
+                meta["wrapper"] = pool.wrapper
 
             snapshot = {
                 "timestamp": timestamp_str,
@@ -178,6 +200,12 @@ class PoolDataStore:
                 "bal_rewards_max": round(pool.bal_rewards_apy[1], 4) if len(pool.bal_rewards_apy) > 1 else 0,
                 "total_apy": round(pool.total_apy, 4)
             }
+
+            # Merkl's own figure, for tracking the Balancer/Merkl gap over time
+            if pool.merkl_apr_balancer is not None:
+                snapshot["merkl_apr_balancer"] = round(pool.merkl_apr_balancer, 4)
+            if pool.merkl_apr_merkl is not None:
+                snapshot["merkl_apr_merkl"] = round(pool.merkl_apr_merkl, 4)
 
             # Add Aura data if present
             if pool.aura_apy is not None:
@@ -255,6 +283,7 @@ class PoolDataStore:
         archive_file = os.path.join(self.data_dir, f"balancer_pools_{date_str}.json")
 
         timestamp = datetime.utcnow()
+        keys = self._generate_pool_keys(pool_data_list)
 
         data = {
             "version": "1.0",
@@ -264,7 +293,8 @@ class PoolDataStore:
                 "total_pools": len(pool_data_list),
                 "chains": sorted(set(p.chain for p in pool_data_list))
             },
-            "pools": [self._pool_to_json(p) for p in pool_data_list]
+            "pools": [self._pool_to_json(p, keys[self._generate_pool_uid(p)])
+                      for p in pool_data_list]
         }
 
         with open(archive_file, "w") as f:
@@ -285,14 +315,19 @@ class PoolDataStore:
         except json.JSONDecodeError:
             return {}
 
-    def _pool_to_json(self, pool: PoolData) -> Dict[str, Any]:
+    def _pool_to_json(self, pool: PoolData, pool_key: str = None) -> Dict[str, Any]:
         """Convert PoolData to JSON-serializable dict with structure"""
         result = {
-            "id": self._generate_pool_key(pool),
+            "id": pool_key or self._generate_pool_key(pool),
+            # Canonical join key: chain + full address. Never collides, never changes.
+            # Prefer this over "id" (derived from the display name) when matching pools.
+            "uid": self._generate_pool_uid(pool),
             "name": pool.name,
             "chain": pool.chain,
             "address": pool.address,
             "pool_id": pool.pool_id,
+            "wrapper": pool.wrapper,
+            "wrappers": pool.wrappers,
             "data": {
                 "tvl": round(pool.tvl, 2),
                 "tvl_formatted": self._format_currency(pool.tvl),
@@ -310,6 +345,7 @@ class PoolDataStore:
                 "amounts": [round(a, 6) for a in pool.coin_amounts],
                 "prices": [round(p, 4) for p in pool.coin_prices]
             },
+            "merkl": self._merkl_to_json(pool),
             # Flat aura_apy field for FarmTracker compatibility
             "aura_apy": round(pool.aura_apy, 4) if pool.aura_apy is not None else None,
             "aura": {
@@ -327,6 +363,7 @@ class PoolDataStore:
             pool_data = data.get("data", {})
             tokens = data.get("tokens", {})
             aura = data.get("aura") or {}
+            merkl = data.get("merkl") or {}
 
             bal_rewards = pool_data.get("bal_rewards", {})
 
@@ -344,6 +381,10 @@ class PoolDataStore:
                 coin_ratios=tokens.get("ratios", []),
                 coin_amounts=tokens.get("amounts", []),
                 coin_prices=tokens.get("prices", []),
+                wrapper=data.get("wrapper"),
+                wrappers=data.get("wrappers", []),
+                merkl_apr_balancer=merkl.get("apr_balancer"),
+                merkl_apr_merkl=merkl.get("apr_merkl"),
                 aura_apy=aura.get("apy"),
                 aura_tvl=aura.get("tvl"),
                 aura_boost=aura.get("boost"),
@@ -353,12 +394,88 @@ class PoolDataStore:
             print(f"Error parsing pool data: {e}")
             return None
 
+    def _merkl_to_json(self, pool: PoolData) -> Optional[Dict[str, Any]]:
+        """
+        Merkl reward APR as reported by both sources.
+
+        Balancer and Merkl regularly disagree about the same campaign (2-3pp gaps are
+        common on the dominant APR component). `total_apy` is composed from Balancer's
+        aprItems, so `source` is always "balancer" - `apr_merkl` is a cross-check, not
+        an alternative total. `delta_pp` is positive when Balancer publishes the higher
+        number. Returns None for pools with no Merkl campaign.
+        """
+        if pool.merkl_apr_balancer is None and pool.merkl_apr_merkl is None:
+            return None
+
+        delta = None
+        if pool.merkl_apr_balancer is not None and pool.merkl_apr_merkl is not None:
+            delta = round(pool.merkl_apr_balancer - pool.merkl_apr_merkl, 4)
+
+        return {
+            "source": "balancer",
+            "apr_published": round(pool.merkl_apr_balancer, 4) if pool.merkl_apr_balancer is not None else None,
+            "apr_balancer": round(pool.merkl_apr_balancer, 4) if pool.merkl_apr_balancer is not None else None,
+            "apr_merkl": round(pool.merkl_apr_merkl, 4) if pool.merkl_apr_merkl is not None else None,
+            "delta_pp": delta
+        }
+
+    def _generate_pool_uid(self, pool: PoolData) -> str:
+        """
+        Canonical, collision-free identifier: chain + full pool address.
+
+        Display names are not unique - Monad alone has several pools whose names and
+        ticker sets differ only by a wrapper prefix (wnUSDT0 vs waMonUSDT0). Consumers
+        should join on this.
+        """
+        return f"{pool.chain}_{pool.address.lower()}"
+
     def _generate_pool_key(self, pool: PoolData) -> str:
-        """Generate unique key for a pool"""
+        """
+        Generate a human-readable key for a pool (chain + slugified name).
+
+        Not guaranteed unique - use _generate_pool_keys() when handling a batch so
+        same-name pools get disambiguated instead of silently overwriting each other.
+        """
         import re
         name = pool.name.lower()
         name = re.sub(r'[^a-z0-9]+', '_', name).strip('_')
         return f"{pool.chain}_{name}"
+
+    def _generate_pool_keys(self, pool_data_list: List[PoolData]) -> Dict[str, str]:
+        """
+        Map each pool's uid -> display key, disambiguating name collisions.
+
+        Two Balancer pools on one chain can share a name ("Aave 3-pool" is not a
+        unique string). Left alone they would collapse onto one key and merge their
+        history snapshots. When that happens every colliding pool gets an address
+        suffix, so the result depends only on the set of pools, not on their order.
+
+        Args:
+            pool_data_list: List of PoolData objects
+
+        Returns:
+            Dict of uid -> key
+        """
+        by_key: Dict[str, List[PoolData]] = {}
+        for pool in pool_data_list:
+            by_key.setdefault(self._generate_pool_key(pool), []).append(pool)
+
+        keys: Dict[str, str] = {}
+        for key, pools in by_key.items():
+            # Distinct addresses only - the same pool listed twice is not a collision
+            addresses = {p.address.lower() for p in pools}
+            for pool in pools:
+                if len(addresses) > 1:
+                    suffix = pool.address.lower().replace("0x", "")[:6]
+                    keys[self._generate_pool_uid(pool)] = f"{key}_{suffix}"
+                else:
+                    keys[self._generate_pool_uid(pool)] = key
+
+            if len(addresses) > 1:
+                print(f"Warning: {len(addresses)} pools share the key '{key}' "
+                      f"({', '.join(sorted(addresses))}); disambiguating by address")
+
+        return keys
 
     def _format_currency(self, amount: float) -> str:
         """Format currency with suffixes"""
