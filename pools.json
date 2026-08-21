@@ -8,14 +8,71 @@
       "pool": "0xc4ce391d82d164c166df9c8336ddf84206b2f812",
       "asset_type": "ETH",
       "comment": "wstETH/WETH Aave Lido",
+      "wrapper": "aave",
       "aura_enabled": true
     },
     {
       "chain": "base",
       "pool": "0x7ab124ec4029316c2a42f713828ddf2a192b36db",
       "asset_type": "USD",
-      "comment": "GHO/USDC",
+      "comment": "GHO/USDC Aave",
+      "wrapper": "aave",
       "aura_enabled": true
+    },
+    {
+      "chain": "ethereum",
+      "pool": "0x111ce2a60c30f6058a57d0dbae1a39a42d998826",
+      "asset_type": "USD",
+      "comment": "msUSD/USDC MainStreet",
+      "aura_enabled": true
+    },
+    {
+      "chain": "monad",
+      "pool": "0xc71c30914bc7790218b1adee782ba307b7867b08",
+      "asset_type": "USD",
+      "comment": "syzUSD/AUSD Yuzu Surge",
+      "wrapper": "neverland",
+      "aura_enabled": false
+    },
+    {
+      "chain": "monad",
+      "pool": "0x2daa146dfb7eaef0038f9f15b2ec1e4de003f72b",
+      "asset_type": "USD",
+      "comment": "USDT0/AUSD/USDC Neverland 3-pool (wn* legs) - NOT the Aave 3-pool at 0xdaae8049",
+      "wrapper": "neverland",
+      "aura_enabled": false
+    },
+    {
+      "chain": "monad",
+      "pool": "0xdaae80492fda633b5d0375b22eedc5c7b422fb4c",
+      "asset_type": "USD",
+      "comment": "USDT0/AUSD/USDC Aave 3-pool (waMon* legs) - NOT the Neverland 3-pool at 0x2daa146d",
+      "wrapper": "aave",
+      "aura_enabled": false
+    },
+    {
+      "chain": "monad",
+      "pool": "0x963b93c2a8c8f4db243de6ec360f528a8e1540d5",
+      "asset_type": "USD",
+      "comment": "sUSDe/USDT0 Aave",
+      "wrapper": "aave",
+      "aura_enabled": false
+    },
+    {
+      "chain": "monad",
+      "pool": "0x234b49e87a7fff921a060c21d2c013291bbd7ff1",
+      "asset_type": "USD",
+      "comment": "avUSD/AUSD Avant",
+      "wrapper": "aave",
+      "aura_enabled": false
+    },
+    {
+      "chain": "monad",
+      "pool": "0xf40a707ab16c9ba7a72faa3f282ecebf7fea1559",
+      "asset_type": "USD",
+      "comment": "USDe/USDT0 Aave",
+      "wrapper": "aave",
+      "aura_enabled": false
     }
   ]
 }

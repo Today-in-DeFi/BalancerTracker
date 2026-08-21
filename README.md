@@ -39,7 +39,10 @@ python3 scripts/check_tracked.py --pool 0xc4ce...b812 --chain ethereum
 
 ## Configuration
 
-Edit `pools.json` to configure tracked pools:
+Edit `pools.json` to configure tracked pools. Set `wrapper` (`aave`, `neverland`, ...)
+on any pool that has a lookalike — chains routinely run pools over the same underlying
+assets through different wrappers, and they pay materially different yields. See
+`DATA_ACCESS.md` for how consumers should match pools.
 
 ```json
 {
@@ -51,6 +54,7 @@ Edit `pools.json` to configure tracked pools:
       "chain": "ethereum",
       "pool": "0x...",
       "comment": "Pool description",
+      "wrapper": "aave",
       "aura_enabled": true
     }
   ]

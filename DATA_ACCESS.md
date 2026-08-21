@@ -37,10 +37,13 @@ Contains the most recent pool data with full details.
 ```json
 {
   "id": "ethereum_balancer_aave_lido_weth_wsteth",
+  "uid": "ethereum_0xc4ce391d82d164c166df9c8336ddf84206b2f812",
   "name": "Balancer Aave Lido wETH-wstETH",
   "chain": "ethereum",
   "address": "0xc4ce391d82d164c166df9c8336ddf84206b2f812",
   "pool_id": "0xc4ce391d82d164c166df9c8336ddf84206b2f812",
+  "wrapper": "aave",
+  "wrappers": ["aave"],
   "data": {
     "tvl": 604606.37,
     "tvl_formatted": "$604.61K",
@@ -61,6 +64,7 @@ Contains the most recent pool data with full details.
     "amounts": [87.682437, 84.72225],
     "prices": [0.0, 0.0]
   },
+  "merkl": null,
   "aura": {
     "apy": 8.7406,
     "tvl": 367588.4,
@@ -81,10 +85,12 @@ Time-series data for tracking changes over time.
   "pools": {
     "ethereum_balancer_aave_lido_weth_wsteth": {
       "metadata": {
+        "uid": "ethereum_0xc4ce391d82d164c166df9c8336ddf84206b2f812",
         "name": "Balancer Aave Lido wETH-wstETH",
         "chain": "ethereum",
         "address": "0xc4ce391d82d164c166df9c8336ddf84206b2f812",
-        "pool_id": "0xc4ce391d82d164c166df9c8336ddf84206b2f812"
+        "pool_id": "0xc4ce391d82d164c166df9c8336ddf84206b2f812",
+        "wrapper": "aave"
       },
       "snapshots": [
         {
@@ -106,6 +112,49 @@ Time-series data for tracking changes over time.
 ---
 
 ## Field Descriptions
+
+### Identity Fields — read this before matching pools
+
+| Field | Description |
+|-------|-------------|
+| `uid` | **Canonical join key.** `{chain}_{address}`. Unique, stable, never reused. |
+| `id` | Human-readable key, `{chain}_{slugified name}`. Convenient, but names are not unique — same-name pools get an address suffix appended. |
+| `address` | Balancer pool contract |
+| `wrapper` | Wrapper family of the pool's tokens: `"aave"`, `"neverland"`, `"mixed"`, or `null` for unwrapped |
+| `wrappers` | Every family detected, sorted — `["aave", "neverland"]` when the pool spans both |
+
+**Join on `uid` or `address`, never on name or ticker set.** Different protocols wrap
+the same underlying assets, and the wrapped pools are near-indistinguishable by name
+while paying very different yields. Live example on Monad:
+
+| | `monad_0x2daa146d…f72b` | `monad_0xdaae8049…fb4c` |
+|---|---|---|
+| Name | wnAUSD / wnUSDC / wnUSDT0 | Aave 3-pool |
+| Legs | wnUSDT0 / wnAUSD / wnUSDC | waMonUSDT0 / waMonAUSD / waMonUSDC |
+| `wrapper` | `neverland` | `aave` |
+| Total APY | ~9.9% | ~13.1% |
+
+Same three underlying assets (USDT0 / AUSD / USDC), same chain, addresses that both
+start `0x?daa`/`0xdaae`. The `wn` vs `waMon` prefix is the only distinguishing signal,
+which is why `wrapper` is stored on the record instead of being re-derived downstream.
+It is set explicitly per pool in `pools.json` and falls back to symbol-prefix detection.
+
+### Merkl Fields
+
+`merkl` is `null` for pools with no Merkl campaign. Otherwise:
+
+| Field | Description |
+|-------|-------------|
+| `merkl.source` | Always `"balancer"` — which figure `data.total_apy` is built from |
+| `merkl.apr_published` | The Merkl reward APR included in `total_apy` |
+| `merkl.apr_balancer` | Balancer's computed figure for the campaign (`aprItems`, type `MERKL`) |
+| `merkl.apr_merkl` | Merkl's own figure for the same campaign (`api.merkl.xyz/v4/opportunities`) |
+| `merkl.delta_pp` | `apr_balancer - apr_merkl`, in percentage points |
+
+The two sources routinely disagree by 1–3pp on the same campaign, and on
+reward-dominated pools that is most of the headline yield. Both are recorded so the gap
+is visible rather than silently resolved; treat `delta_pp` as an uncertainty band on
+`total_apy`, not as an error.
 
 ### APY Fields
 
@@ -193,6 +242,29 @@ for pool in data['pools']:
         print(f"  Aura Staking Contract: {pool['aura']['staking_contract']}")
     else:
         print(f"  Aura: Not available")
+```
+
+#### Match a Pool Safely (wrapper-aware)
+```python
+import json
+
+with open('/home/danger/BalancerTracker/data/balancer_pools_latest.json') as f:
+    data = json.load(f)
+
+by_uid = {p['uid']: p for p in data['pools']}
+
+# Correct: address-keyed lookup
+pool = by_uid['monad_0xdaae80492fda633b5d0375b22eedc5c7b422fb4c']
+
+# Also correct: asset set is ambiguous, so narrow by wrapper family
+monad_tristables = [
+    p for p in data['pools']
+    if p['chain'] == 'monad' and len(p['tokens']['coins']) == 3
+    and p['wrapper'] == 'aave'
+]
+
+# WRONG: "the Monad USDT0/AUSD/USDC pool" matches two different pools whose
+# yields differ by ~3pp. Never resolve a pool by name or ticker set alone.
 ```
 
 #### Get Pool by Address
@@ -300,6 +372,7 @@ Pools to track are configured in `pools.json`:
 | `chain` | Blockchain (ethereum, arbitrum, polygon, etc.) |
 | `pool` | Pool contract address |
 | `asset_type` | ETH or USD (for Google Sheets organization) |
+| `wrapper` | Wrapper family (`aave`, `neverland`, ...). Optional — omit and it is detected from token prefixes. Set it explicitly for pools with lookalikes. |
 | `aura_enabled` | Whether to fetch Aura data for this pool |
 | `comment` | Human-readable description |
 
@@ -311,6 +384,7 @@ Pools to track are configured in `pools.json`:
 |------|--------|
 | Pool TVL, APYs, Tokens | Balancer GraphQL API (`api-v3.balancer.fi`) |
 | BAL Reward Rates | Balancer API (`aprItems`) |
+| Merkl Reward APR (cross-check) | Merkl API (`api.merkl.xyz/v4/opportunities`) |
 | Aura Pool Data | Aura Subgraph (`api.subgraph.ormilabs.com`) |
 | AURA Token Price | CoinGecko API |
 

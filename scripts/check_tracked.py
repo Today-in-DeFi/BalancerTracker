@@ -32,6 +32,7 @@ def main():
                 "chain": entry.get("chain"),
                 "comment": entry.get("comment"),
                 "asset_type": entry.get("asset_type"),
+                "wrapper": entry.get("wrapper"),
                 "aura_enabled": entry.get("aura_enabled", False),
                 "details": f"Found in pools.json: {entry.get('comment', '')}",
                 "add_entry": None,
@@ -45,12 +46,18 @@ def main():
         "tracked": False,
         "pool": args.pool,
         "chain": args.chain,
-        "details": "Pool not found in pools.json",
+        "details": (
+            "Pool not found in pools.json. Match on address only - several chains run "
+            "near-identical pools that differ solely in the wrapper prefix of their "
+            "tokens (wn* Neverland vs waMon*/waEth*/waBas* Aave), and those carry "
+            "materially different yields."
+        ),
         "add_entry": {
             "chain": args.chain,
             "pool": args.pool,
             "asset_type": "FILL_IN (USD|ETH)",
             "comment": "FILL_IN (e.g., tokenA/tokenB pool description)",
+            "wrapper": "FILL_IN (aave|neverland|omit if the pool holds no wrapped tokens)",
             "aura_enabled": False,
         },
         "add_command": None,
