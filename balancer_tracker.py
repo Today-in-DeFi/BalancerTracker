@@ -296,7 +296,9 @@ class BalancerAPI:
                     }
                 }
                 poolTokens {
+                    address
                     symbol
+                    decimals
                     balance
                     weight
                 }
@@ -1026,6 +1028,8 @@ class BalancerTracker:
         coin_ratios = []
         coin_amounts = []
         coin_prices = []
+        coin_addresses = []
+        coin_decimals = []
 
         # First pass: collect balances, USD values and per-token prices.
         # The Balancer v3 API returns balanceUSD per token, which gives both a
@@ -1037,6 +1041,9 @@ class BalancerTracker:
 
         for token in pool_data.get('poolTokens', []):
             symbol = token.get('symbol', 'Unknown')
+            address = token.get('address')
+            address = address.lower() if address else None
+            decimals = token.get('decimals')
             balance = float(token.get('balance', 0) or 0)
             balance_usd = float(token.get('balanceUSD', 0) or 0)
             price_rate = float(token.get('priceRate', 0) or 0)
@@ -1056,17 +1063,19 @@ class BalancerTracker:
                 print(f"Warning: no price for {symbol} in pool "
                       f"{pool_data.get('name', '')}, defaulting to 1.0")
 
-            token_rows.append((symbol, balance, price, balance_usd))
+            token_rows.append((symbol, address, decimals, balance, price, balance_usd))
             total_value_usd += balance_usd
 
         # Second pass: emit coins, value-weighted ratios, amounts and prices.
-        for symbol, balance, price, balance_usd in token_rows:
+        for symbol, address, decimals, balance, price, balance_usd in token_rows:
             ratio_pct = (balance_usd / total_value_usd * 100) if total_value_usd > 0 else 0.0
 
             coins.append(symbol)
             coin_amounts.append(balance)
             coin_ratios.append(f"{symbol}: {ratio_pct:.1f}%")
             coin_prices.append(price)
+            coin_addresses.append(address)
+            coin_decimals.append(decimals)
 
         # Wrapper family - explicit config wins, symbol prefixes are the fallback
         wrapper, wrappers = resolve_wrapper(coins, cfg.get('wrapper'))
@@ -1133,6 +1142,8 @@ class BalancerTracker:
             coin_ratios=coin_ratios,
             coin_amounts=coin_amounts,
             coin_prices=coin_prices,
+            coin_addresses=coin_addresses,
+            coin_decimals=coin_decimals,
             wrapper=wrapper,
             wrappers=wrappers,
             merkl_apr_balancer=merkl_apr_balancer,

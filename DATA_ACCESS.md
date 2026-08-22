@@ -18,6 +18,10 @@ Balancer pool and Aura Finance yield data, updated on demand.
 
 Contains the most recent pool data with full details.
 
+Version 2.0 represents `tokens` as a list of self-contained token legs. The
+contract address is lowercase when known; `null` means the upstream source did
+not provide one.
+
 ```json
 {
   "version": "1.0",
@@ -58,12 +62,16 @@ Contains the most recent pool data with full details.
     ],
     "total_apy": 5.0188
   },
-  "tokens": {
-    "coins": ["waEthLidoWETH", "waEthLidowstETH"],
-    "ratios": ["waEthLidoWETH: 50.0%", "waEthLidowstETH: 50.0%"],
-    "amounts": [87.682437, 84.72225],
-    "prices": [0.0, 0.0]
-  },
+  "tokens": [
+    {
+      "symbol": "waEthLidoWETH",
+      "address": "0x...",
+      "decimals": 18,
+      "ratio": 0.5,
+      "amount": 87.682437,
+      "price": 0.0
+    }
+  ],
   "merkl": null,
   "aura": {
     "apy": 8.7406,
@@ -259,7 +267,7 @@ pool = by_uid['monad_0xdaae80492fda633b5d0375b22eedc5c7b422fb4c']
 # Also correct: asset set is ambiguous, so narrow by wrapper family
 monad_tristables = [
     p for p in data['pools']
-    if p['chain'] == 'monad' and len(p['tokens']['coins']) == 3
+    if p['chain'] == 'monad' and len(p['tokens']) == 3
     and p['wrapper'] == 'aave'
 ]
 

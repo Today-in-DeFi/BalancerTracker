@@ -26,6 +26,8 @@ class PoolData:
     coin_ratios: List[str]
     coin_amounts: List[float] = field(default_factory=list)
     coin_prices: List[float] = field(default_factory=list)
+    coin_addresses: List[Optional[str]] = field(default_factory=list)
+    coin_decimals: List[Optional[int]] = field(default_factory=list)
     # Wrapper family: which protocol's wrapped tokens this pool holds.
     # "aave" (waMon*/waEth*/waBas*) vs "neverland" (wn*) etc. Two pools can hold the
     # same underlying assets with different wrappers and carry ~2x different yields,
@@ -92,7 +94,7 @@ class PoolDataStore:
         keys = self._generate_pool_keys(pool_data_list)
 
         data = {
-            "version": "1.0",
+            "version": "2.0",
             "metadata": {
                 "generated_at": timestamp.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "source": "BalancerTracker",
@@ -339,12 +341,23 @@ class PoolDataStore:
                 "other_rewards": pool.other_rewards,
                 "total_apy": round(pool.total_apy, 4)
             },
-            "tokens": {
-                "coins": pool.coins,
-                "ratios": pool.coin_ratios,
-                "amounts": [round(a, 6) for a in pool.coin_amounts],
-                "prices": [round(p, 4) for p in pool.coin_prices]
-            },
+            "tokens": [
+                {
+                    "symbol": symbol,
+                    "address": (pool.coin_addresses[index].lower()
+                                if index < len(pool.coin_addresses)
+                                and pool.coin_addresses[index] else None),
+                    "decimals": (pool.coin_decimals[index]
+                                 if index < len(pool.coin_decimals) else None),
+                    "ratio": self._ratio_fraction(pool.coin_ratios[index])
+                             if index < len(pool.coin_ratios) else 0.0,
+                    "amount": round(pool.coin_amounts[index], 6)
+                              if index < len(pool.coin_amounts) else 0.0,
+                    "price": round(pool.coin_prices[index], 4)
+                             if index < len(pool.coin_prices) else 0.0
+                }
+                for index, symbol in enumerate(pool.coins)
+            ],
             "merkl": self._merkl_to_json(pool),
             # Flat aura_apy field for FarmTracker compatibility
             "aura_apy": round(pool.aura_apy, 4) if pool.aura_apy is not None else None,
@@ -367,6 +380,26 @@ class PoolDataStore:
 
             bal_rewards = pool_data.get("bal_rewards", {})
 
+            if isinstance(tokens, list):
+                coins = [token.get("symbol", "Unknown") for token in tokens]
+                coin_addresses = [token.get("address") for token in tokens]
+                coin_decimals = [token.get("decimals") for token in tokens]
+                coin_ratios = [
+                    f"{symbol}: {float(token.get('ratio', 0) or 0) * 100:.1f}%"
+                    for symbol, token in zip(coins, tokens)
+                ]
+                coin_amounts = [token.get("amount", 0) for token in tokens]
+                coin_prices = [token.get("price", 0) for token in tokens]
+            else:
+                # Backward compatibility for snapshots written before token legs
+                # became self-contained objects.
+                coins = tokens.get("coins", [])
+                coin_addresses = tokens.get("addresses", [])
+                coin_decimals = tokens.get("decimals", [])
+                coin_ratios = tokens.get("ratios", [])
+                coin_amounts = tokens.get("amounts", [])
+                coin_prices = tokens.get("prices", [])
+
             return PoolData(
                 name=data.get("name", "Unknown"),
                 chain=data.get("chain", "ethereum"),
@@ -377,10 +410,12 @@ class PoolDataStore:
                 bal_rewards_apy=[bal_rewards.get("min", 0), bal_rewards.get("max", 0)],
                 other_rewards=pool_data.get("other_rewards", []),
                 total_apy=pool_data.get("total_apy", 0),
-                coins=tokens.get("coins", []),
-                coin_ratios=tokens.get("ratios", []),
-                coin_amounts=tokens.get("amounts", []),
-                coin_prices=tokens.get("prices", []),
+                coins=coins,
+                coin_ratios=coin_ratios,
+                coin_amounts=coin_amounts,
+                coin_prices=coin_prices,
+                coin_addresses=coin_addresses,
+                coin_decimals=coin_decimals,
                 wrapper=data.get("wrapper"),
                 wrappers=data.get("wrappers", []),
                 merkl_apr_balancer=merkl.get("apr_balancer"),
@@ -393,6 +428,14 @@ class PoolDataStore:
         except Exception as e:
             print(f"Error parsing pool data: {e}")
             return None
+
+    @staticmethod
+    def _ratio_fraction(ratio: Any) -> float:
+        """Convert the internal display ratio ("SYMBOL: 12.3%") to 0..1."""
+        try:
+            return round(float(str(ratio).rsplit(":", 1)[-1].strip().rstrip("%")) / 100, 6)
+        except (TypeError, ValueError):
+            return 0.0
 
     def _merkl_to_json(self, pool: PoolData) -> Optional[Dict[str, Any]]:
         """
